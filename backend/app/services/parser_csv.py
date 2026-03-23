@@ -1,3 +1,5 @@
+from datetime import date
+
 import pandas as pd
 
 
@@ -69,12 +71,17 @@ def _parse_amount(val) -> float:
         return 0.0
 
 
-def _parse_date(date_str: str) -> str:
-    """Try to parse a date string into YYYY-MM-DD format."""
+def _parse_date(date_str: str) -> date:
+    """Try to parse a date string into a date object."""
+    from datetime import datetime, date as date_type
+
     for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%d-%m-%Y", "%m-%d-%Y", "%Y/%m/%d", "%d %b %Y", "%d %B %Y", "%b %d, %Y"):
         try:
-            from datetime import datetime
-            return datetime.strptime(date_str, fmt).strftime("%Y-%m-%d")
+            return datetime.strptime(date_str, fmt).date()
         except ValueError:
             continue
-    return date_str
+    # Last resort: try pandas
+    try:
+        return pd.to_datetime(date_str).date()
+    except Exception:
+        return date_type.today()

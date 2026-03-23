@@ -1,7 +1,7 @@
 from datetime import date
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func
+from sqlalchemy import case, func
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -61,8 +61,8 @@ def get_summary(
     monthly_data = (
         base_query.with_entities(
             func.strftime("%Y-%m", Transaction.date).label("month"),
-            func.sum(func.case((Transaction.amount < 0, Transaction.amount), else_=0)).label("expenses"),
-            func.sum(func.case((Transaction.amount > 0, Transaction.amount), else_=0)).label("income"),
+            func.sum(case((Transaction.amount < 0, Transaction.amount), else_=0)).label("expenses"),
+            func.sum(case((Transaction.amount > 0, Transaction.amount), else_=0)).label("income"),
         )
         .group_by(func.strftime("%Y-%m", Transaction.date))
         .order_by(func.strftime("%Y-%m", Transaction.date))
